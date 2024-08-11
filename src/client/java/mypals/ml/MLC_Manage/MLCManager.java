@@ -1,6 +1,8 @@
 package mypals.ml.MLC_Manage;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -103,6 +105,14 @@ public class MLCManager {
         }
         return Collections.emptyList();
     }
+    public static void stopAllThreads() {
+        runningThreads.forEach((name, thread) -> {
+            if (thread != null && thread.isAlive()) {
+                thread.interrupt();
+            }
+        });
+        runningThreads.clear();
+    }
 
     public static List<String> getRunningThreadNames() {
         return new ArrayList<>(runningThreads.keySet());
@@ -111,4 +121,13 @@ public class MLCManager {
     private static String generateUniqueMarker() {
         return String.valueOf(threadCounter++); // 生成唯一标识符
     }
+
+    public static void sendNotification(String message, Formatting color) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player != null) {
+            Text chatMessage = Text.literal(message).styled(style -> style.withColor(color));
+            client.player.sendMessage(chatMessage, false); // false 表示消息不会显示在命令输出中
+        }
+    }
+
 }

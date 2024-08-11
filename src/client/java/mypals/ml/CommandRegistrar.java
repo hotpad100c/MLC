@@ -6,13 +6,18 @@ import mypals.ml.MLC_Manage.MLCManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandSource;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CommandRegistrar {
+import static mypals.ml.MLC_Manage.MLCManager.sendNotification;
 
+public class CommandRegistrar {
+    public static MinecraftClient client = MinecraftClient.getInstance();
     // 线程名称建议
     static SuggestionProvider<FabricClientCommandSource> MLCSuggestions = (context, builder) -> {
         List<String> MLCNames = MLCManager.getMLCFileNames();
@@ -35,6 +40,8 @@ public class CommandRegistrar {
                                     .executes(context -> {
                                         String name = StringArgumentType.getString(context, "name");
                                         MLCManager.sendMlc(name);
+                                        String m = "File<"+name+"> was successfully loaded.";
+                                        sendNotification(m, Formatting.GREEN);
                                         return 1;
                                     })
                             )
@@ -48,10 +55,22 @@ public class CommandRegistrar {
                                                 String name = StringArgumentType.getString(context, "name");
                                                 String marker = StringArgumentType.getString(context, "marker");
                                                 MLCManager.stopThread(name, marker);
+                                                String m = "Thread<"+name+"> was successfully stopped.";
+                                                sendNotification(m, Formatting.RED);
                                                 return 1;
                                             })
                                     )
                             )
+                    )
+                    .then(ClientCommandManager.literal("stopAll")
+                            .executes(context -> {
+                                MLCManager.stopAllThreads();
+                                String m = "Stopped all running threads.";
+                                sendNotification(m, Formatting.RED);
+                                return 1;
+                            })
+
+
                     )
             );
         });
