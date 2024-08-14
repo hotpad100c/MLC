@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.io.InputStreamReader;
@@ -172,7 +174,36 @@ public class MLCManager {
         }
         return Collections.emptyList();
     }
-
+    public static void openMhelperFolder() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        Path filePath = Paths.get(client.runDirectory.getAbsolutePath(), "Mhelper", "mlcText");
+            try {
+                // 打开文件夹
+                Desktop.getDesktop().open(filePath.toFile());
+                String m = "MLC folder in path "+ filePath +"is now opened.";
+                sendNotification(m, Formatting.GREEN);
+            } catch (IOException e) {
+                String m = "MLC folder was lost!WHAT HAVE YOU DONE???";
+                sendNotification(m, Formatting.RED);
+                e.printStackTrace();
+                System.err.println("Failed to open MLC folder.");
+            }
+    }
+    public static void openMhelperFolderWithName(String name) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        Path filePath = Paths.get(client.runDirectory.getAbsolutePath(), "Mhelper", "mlcText", name + ".txt");
+        try {
+            // 打开文件夹
+            Desktop.getDesktop().open(filePath.toFile());
+            String m = "File<"+name+"> is now opened!";
+            sendNotification(m, Formatting.GREEN);
+        } catch (IOException e) {
+            String m = "File<"+name+"> does not exists!";
+            sendNotification(m, Formatting.RED);
+            e.printStackTrace();
+            System.err.println("Failed to open MLC file.");
+        }
+    }
     public static void stopAllThreads() {
         runningThreads.forEach((name, thread) -> {
             if (thread != null && thread.isAlive()) {

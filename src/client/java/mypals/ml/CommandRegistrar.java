@@ -96,6 +96,31 @@ public class CommandRegistrar {
 
 
                     )
+                    .then(ClientCommandManager.literal("openFolder")
+                            .executes(context -> {
+                                MLCManager.openMhelperFolder();
+
+                                return 1;
+                            })
+
+
+                    )
+                    .then(ClientCommandManager.literal("openFile")
+                            .then(ClientCommandManager.argument("name", StringArgumentType.word())
+                                    .suggests(MLCSuggestions)
+                                    .executes(context -> {
+                                        String name = StringArgumentType.getString(context, "name");
+                                        MLCManager.openMhelperFolderWithName(name);
+
+                                        return 1;
+                                    })
+
+
+                            )
+
+
+                    )
+
             );
         });
     }
