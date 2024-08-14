@@ -40,7 +40,6 @@ public class MLCManager {
 
     public static void sendMlc(String name) {
         String marker = generateUniqueMarker();
-
         Thread thread = new Thread(() -> {
             MinecraftClient client = MinecraftClient.getInstance();
             Path filePath = Paths.get(client.runDirectory.getAbsolutePath(), "Mhelper", "mlcText", name + ".txt");
@@ -48,41 +47,18 @@ public class MLCManager {
                 try (BufferedReader reader = new BufferedReader(
                         new InputStreamReader(
                                 Files.newInputStream(filePath), StandardCharsets.UTF_8))) { // 使用UTF-8编码
+                    List<String> lines = new ArrayList<>();
                     String line;
-                    while ((line = reader.readLine()) != null) {
-                        synchronized (pauseLock) {
-                            if (paused) {
-                                try {
-                                    pauseLock.wait();
-                                    // 将此线程阻塞，直到另一个方法调用 pauseLock.notifyAll()
-                                    // 注意，调用 wait() 会释放此线程在 pauseLock 上持有的同步锁
-                                    // 这样，另一个线程就可以获取锁并调用 notifyAll()
-                                } catch (InterruptedException ex) {
-                                    break;//芜湖
-                                }
-                            }
-                        }
-                            if (line.startsWith("#DELAY")) {
-                                try {
-                                    // 提取DELAY后面的数字并设置为SpeakDelay
-                                    SpeakDelay = Integer.parseInt(line.replaceAll("\\D+", ""));
-                                } catch (NumberFormatException e) {
-                                    System.err.println("Invalid delay value in line: " + line);
-                                }
-                            } else if (!line.trim().isEmpty()) {
-                                if (line.startsWith("/")) {
-                                    // 发送命令
-                                    client.player.networkHandler.sendCommand(line.substring(1));
-                                } else {
-                                    // 发送聊天消息
-                                    client.player.networkHandler.sendChatMessage(line);
-                                }
-                                // 应用延迟
-                                Thread.sleep(SpeakDelay);
-                            }
 
+                    // 读取文件所有内容到列表
+                    while ((line = reader.readLine()) != null) {
+                        lines.add(line);
                     }
-                } catch (IOException | InterruptedException e) {
+
+                    // 处理读取到的内容
+                    processLines(lines, client);
+
+                } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
                     runningThreads.remove(name + marker); // 移除线程
@@ -97,6 +73,76 @@ public class MLCManager {
         threadMarkers.put(name + marker, marker); // 记录线程标记
         thread.start();
     }
+
+    private static void processLines(List<String> lines, MinecraftClient client) {
+        try {
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+
+                synchronized (pauseLock) {
+                    if (paused) {
+                        try {
+                            pauseLock.wait(); // 将线程阻塞，直到另一个方法调用 pauseLock.notifyAll()
+                        } catch (InterruptedException ex) {
+                            break;
+                        }
+                    }
+                }
+
+                if (line.startsWith("#DELAY")) {
+                    try {
+                        // 提取DELAY后面的数字并设置为SpeakDelay
+                        SpeakDelay = Integer.parseInt(line.replaceAll("\\D+", ""));
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid delay value in line: " + line);
+                    }
+                } else if (line.startsWith("#FOR")) {
+                    try {
+                        // 提取重复次数
+                        int repeatCount = Integer.parseInt(line.replaceAll("\\D+", ""));
+                        List<String> loopContent = new ArrayList<>();
+
+                        // 寻找ENDFOR
+                        int nestedLoops = 0;
+                        while (++i < lines.size()) {
+                            String loopLine = lines.get(i);
+                            if (loopLine.startsWith("#FOR")) {
+                                nestedLoops++;
+                            } else if (loopLine.startsWith("#ENDFOR")) {
+                                if (nestedLoops == 0) {
+                                    break;
+                                } else {
+                                    nestedLoops--;
+                                }
+                            }
+                            loopContent.add(loopLine);
+                        }
+
+                        // 递归处理循环内容
+                        for (int j = 0; j < repeatCount; j++) {
+                            processLines(loopContent, client);
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid repeat count in line: " + line);
+                    }
+                } else if (!line.startsWith("#ENDFOR")) {
+                    if (line.startsWith("/")) {
+                        // 发送命令
+                        client.player.networkHandler.sendCommand(line.substring(1));
+                    } else {
+                        // 发送聊天消息
+                        client.player.networkHandler.sendChatMessage(line);
+                    }
+                    Thread.sleep(SpeakDelay);
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public static void stopThread(String name, String marker) {
         String key = name + marker;
