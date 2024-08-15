@@ -52,7 +52,7 @@ public class CommandRegistrar {
                                     })
                             )
                     )
-                    .then(ClientCommandManager.literal("stop")
+                    /*.then(ClientCommandManager.literal("stop")
                             .then(ClientCommandManager.argument("name", StringArgumentType.word())
                                     .suggests(MlCRunningThreads)
                                     .then(ClientCommandManager.argument("marker", StringArgumentType.word())
@@ -67,7 +67,7 @@ public class CommandRegistrar {
                                             })
                                     )
                             )
-                    )
+                    )*/
                     .then(ClientCommandManager.literal("stopAll")
                             .executes(context -> {
                                 MLCManager.stopAllThreads();

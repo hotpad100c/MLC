@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.io.InputStreamReader;
 
+
 public class MLCManager {
     public static int SpeakDelay = 100;
     private static final ConcurrentMap<String, Thread> runningThreads = new ConcurrentHashMap<>();
@@ -29,6 +30,8 @@ public class MLCManager {
     private static final Object pauseLock = new Object();
 
     private static boolean paused = false;
+
+    private static final MLCProcessor mlcProcessor = new MLCProcessor();
 
     public static List<String> getThreadMarkers(String name) {
         List<String> markers = new ArrayList<>();
@@ -48,31 +51,28 @@ public class MLCManager {
             if (filePath.toFile().exists()) {
                 try (BufferedReader reader = new BufferedReader(
                         new InputStreamReader(
-                                Files.newInputStream(filePath), StandardCharsets.UTF_8))) { // 使用UTF-8编码
+                                Files.newInputStream(filePath), StandardCharsets.UTF_8))) {
                     List<String> lines = new ArrayList<>();
                     String line;
-
-                    // 读取文件所有内容到列表
                     while ((line = reader.readLine()) != null) {
                         lines.add(line);
                     }
 
-                    // 处理读取到的内容
-                    processLines(lines, client);
+                    mlcProcessor.processLines(lines, client); // 使用MLCProcessor处理行
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    runningThreads.remove(name + marker); // 移除线程
-                    threadMarkers.remove(name + marker); // 移除线程标记
+                    runningThreads.remove(name + marker);
+                    threadMarkers.remove(name + marker);
                 }
             } else {
                 System.err.println("File not found: " + filePath.toString());
             }
-        }, "MLC-Thread-" + name + "-" + marker); // 设置线程名称
+        }, "MLC-Thread-" + name + "-" + marker);
 
-        runningThreads.put(name + marker, thread); // 记录线程
-        threadMarkers.put(name + marker, marker); // 记录线程标记
+        runningThreads.put(name + marker, thread);
+        threadMarkers.put(name + marker, marker);
         thread.start();
     }
 

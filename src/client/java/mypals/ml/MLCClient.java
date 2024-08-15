@@ -32,26 +32,33 @@ public class MLCClient implements ClientModInitializer {
 	}
 
 	private boolean onChatMessageReceived(Text originalMessage, SignedMessage signedMessage, GameProfile gameProfile, MessageType.Parameters parameters, Instant instant) {
-		// 创建一个新的样式，添加点击事件和悬停事件
-		Style hoverStyle = Style.EMPTY
-				.withFormatting(Formatting.UNDERLINE) // 鼠标悬停时文本下划线
-				.withColor(Formatting.LIGHT_PURPLE);
+		// 检查消息是否为玩家发送，并且不是系统消息
+		if (gameProfile != null && MinecraftClient.getInstance().player != null) {
+			// 创建一个新的样式，添加点击事件和悬停事件
+			Style hoverStyle = Style.EMPTY
+					.withFormatting(Formatting.UNDERLINE)
+					.withColor(Formatting.LIGHT_PURPLE);
 
-		// 创建提示文本
-		Text hoverText = Text.literal("Click to copy").formatted(Formatting.ITALIC).setStyle(hoverStyle);
+			// 创建提示文本
+			Text hoverText = Text.literal("Click to copy").formatted(Formatting.ITALIC).setStyle(hoverStyle);
 
-		// 创建一个新的样式，添加点击事件和悬停事件
-		Text modifiedMessage = originalMessage.copy().setStyle(Style.EMPTY
-				.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, originalMessage.getString()))
-				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
-		);
+			// 创建一个新的样式，添加点击事件和悬停事件
+			Text modifiedMessage = originalMessage.copy().setStyle(Style.EMPTY
+					.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, originalMessage.getString()))
+					.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
+			);
 
-		// 将修改后的消息重新应用到聊天框
-		MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(modifiedMessage);
+			// 将修改后的消息重新应用到聊天框
+			MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(modifiedMessage);
 
-		// 返回false，表示不要再处理原始消息
-		return false;
+			// 返回false，表示不要再处理原始消息
+			return false;
+		}
+
+		// 对于其他消息，允许默认处理
+		return true;
 	}
+
 
 	private void ensureMLCDirectoryExists() {
 		MinecraftClient client = MinecraftClient.getInstance();
