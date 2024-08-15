@@ -3,6 +3,7 @@ package mypals.ml;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import mypals.ml.MLC_Manage.MLCManager;
+import mypals.ml.MLC_Manage.MLCProcessor;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -80,7 +81,7 @@ public class CommandRegistrar {
                     )
                     .then(ClientCommandManager.literal("pauseAll")
                             .executes(context -> {
-                                MLCManager.pauseAll();
+                                MLCProcessor.pauseAll();
 
                                 return 1;
                             })
@@ -89,7 +90,7 @@ public class CommandRegistrar {
                     )
                     .then(ClientCommandManager.literal("resumeAll")
                             .executes(context -> {
-                                MLCManager.resumeAll();
+                                MLCProcessor.resumeAll();
 
                                 return 1;
                             })

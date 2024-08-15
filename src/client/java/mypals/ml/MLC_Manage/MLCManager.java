@@ -153,20 +153,6 @@ public class MLCManager {
         return String.valueOf(threadCounter++); // 生成唯一标识符
     }
 
-    public static void pauseAll() {
-        paused = true;
-        String m = "Paused all running threads.";
-        sendNotification(m, Formatting.RED);
-    }
-
-    public static void resumeAll() {
-        synchronized (pauseLock) {
-            paused = false;
-            pauseLock.notifyAll(); // 解锁
-        }
-        String m = "Resumed all running threads.";
-        sendNotification(m, Formatting.LIGHT_PURPLE);
-    }
 
     public static void sendNotification(String message, Formatting color) {
         MinecraftClient client = MinecraftClient.getInstance();

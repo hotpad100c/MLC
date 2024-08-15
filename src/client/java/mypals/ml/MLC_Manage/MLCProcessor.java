@@ -1,6 +1,8 @@
 package mypals.ml.MLC_Manage;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +11,8 @@ import static mypals.ml.MLC_Manage.VariableManager.replaceVariables;
 
 public class MLCProcessor {
 
-    private final Object pauseLock = new Object();
-    private boolean paused = false;
+    private static final Object pauseLock = new Object();
+    private static boolean paused = false;
 
     public void processLines(List<String> lines, MinecraftClient client) {
         try {
@@ -79,16 +81,25 @@ public class MLCProcessor {
         }
     }
 
-    public void pauseAll() {
+    public static void pauseAll() {
         synchronized (pauseLock) {
             paused = true;
+            sendNotification("Paused....", Formatting.RED);
         }
     }
 
-    public void resumeAll() {
+    public static void resumeAll() {
         synchronized (pauseLock) {
             paused = false;
+            sendNotification("Resumed....", Formatting.LIGHT_PURPLE);
             pauseLock.notifyAll();
+        }
+    }
+    public static void sendNotification(String message, Formatting color) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player != null) {
+            Text chatMessage = Text.literal(message).styled(style -> style.withColor(color));
+            client.player.sendMessage(chatMessage, false); // false 表示消息不会显示在命令输出中
         }
     }
 }
