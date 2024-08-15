@@ -5,6 +5,8 @@ import net.minecraft.client.MinecraftClient;
 import java.util.ArrayList;
 import java.util.List;
 
+import static mypals.ml.MLC_Manage.VariableManager.replaceVariables;
+
 public class MLCProcessor {
 
     private final Object pauseLock = new Object();
@@ -26,6 +28,7 @@ public class MLCProcessor {
                 }
 
                 if (line.startsWith("#DELAY")) {
+                    line = replaceVariables(line);
                     try {
                         MLCManager.SpeakDelay = Integer.parseInt(line.replaceAll("\\D+", ""));
                     } catch (NumberFormatException e) {
@@ -35,6 +38,7 @@ public class MLCProcessor {
                         line.startsWith("#BOOL") || line.startsWith("#FLOAT")) {
                     VariableManager.parseVariable(line); // 解析并设置变量
                 } else if (line.startsWith("#FOR")) {
+                    line = replaceVariables(line);
                     try {
                         int repeatCount = Integer.parseInt(line.replaceAll("\\D+", ""));
                         List<String> loopContent = new ArrayList<>();
@@ -59,7 +63,7 @@ public class MLCProcessor {
                         System.err.println("Invalid repeat count in line: " + line);
                     }
                 } else if (!line.startsWith("#ENDFOR")) {
-                    line = VariableManager.replaceVariables(line); // 替换变量
+                    line = replaceVariables(line); // 替换变量
 
                     if (line.startsWith("/")) {
                         client.player.networkHandler.sendCommand(line.substring(1));
